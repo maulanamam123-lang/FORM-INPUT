@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator Keputusan Wali Kota</title>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  :root{
+    --ink:#1a1a1a;
+    --paper:#ffffff;
+    --bg:#eef0f2;
+    --accent:#7a1f2b;
+    --accent-soft:#f4e6e8;
+    --line:#d6d9dc;
+    --muted:#6b7280;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  header{
+    background:var(--accent);
+    color:#fff;
+    padding:18px 24px;
+  }
+  header h1{margin:0;font-size:18px;font-weight:600;}
+  header p{margin:4px 0 0;font-size:13px;opacity:.85;}
+  .layout{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:20px;
+    padding:20px;
+    align-items:start;
+  }
+  @media (max-width: 980px){
+    .layout{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:18px;
+  }
+  .panel h2{
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--accent);
+    border-bottom:1px solid var(--line);
+    padding-bottom:8px;
+    margin:0 0 12px;
+  }
+  fieldset{
+    border:1px solid var(--line);
+    border-radius:6px;
+    margin:0 0 16px;
+    padding:12px;
+  }
+  legend{
+    font-size:12px;
+    font-weight:600;
+    color:var(--accent);
+    padding:0 6px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin:8px 0 3px;
+  }
+  input[type=text], input[type=date], textarea{
+    width:100%;
+    padding:7px 8px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-size:13px;
+    font-family:inherit;
+    resize:vertical;
+  }
+  textarea{min-height:44px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .item-block{
+    border:1px dashed var(--line);
+    border-radius:6px;
+    padding:8px;
+    margin-bottom:8px;
+    position:relative;
+  }
+  .item-block .item-label{
+    font-size:11px;
+    font-weight:700;
+    color:var(--accent);
+    margin-bottom:4px;
+  }
+  .btn{
+    display:inline-block;
+    border:1px solid var(--accent);
+    background:var(--paper);
+    color:var(--accent);
+    padding:6px 12px;
+    border-radius:5px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .btn:hover{background:var(--accent-soft);}
+  .btn.small{padding:3px 8px;font-size:11px;}
+  .btn.danger{border-color:#b3261e;color:#b3261e;}
+  .btn.danger:hover{background:#fbeae9;}
+  .btn.primary{background:var(--accent);color:#fff;}
+  .btn.primary:hover{opacity:.9;}
+  .add-row{margin-top:4px;}
+  .checkbox-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
+  .checkbox-row input{width:auto;}
+  .hint{font-size:11px;color:var(--muted);margin-top:2px;}
+  .sticky-actions{
+    position:sticky;
+    top:20px;
+  }
+  .download-bar{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+  #status{font-size:12px;color:var(--muted);margin-top:8px;}
+
+  /* Preview */
+  .preview-scroll{max-height:80vh;overflow:auto;border:1px solid var(--line);border-radius:6px;}
+  .doc{
+    background:#fff;
+    padding:40px 46px;
+    font-family:"Times New Roman",Georgia,serif;
+    font-size:13px;
+    line-height:1.5;
+    color:#111;
+    min-height:400px;
+  }
+  .doc .center{text-align:center;}
+  .doc .bold{font-weight:700;}
+  .doc h3{font-size:13px;margin:2px 0;}
+  .doc table{width:100%;border-collapse:collapse;margin:6px 0;}
+  .doc table td{vertical-align:top;padding:2px 4px;font-size:13px;}
+  .doc .num-col{width:22px;}
+  .doc .colon-col{width:14px;}
+  .doc .label-col{width:90px;}
+  .doc .section-title{margin-top:14px;font-weight:700;}
+  .doc .sig{margin-top:24px;width:280px;margin-left:auto;text-align:center;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Generator Keputusan Wali Kota</h1>
+  <p>Isi formulir di kiri &rarr; pratinjau otomatis di kanan &rarr; unduh sebagai .docx. Semua proses berjalan di browser, tidak ada data yang dikirim ke server.</p>
+</header>
+
+<div class="layout">
+  <!-- FORM -->
+  <div class="panel">
+    <h2>1. Kop &amp; Judul</h2>
+    <div class="row2">
+      <div>
+        <label>Jabatan (kop surat)</label>
+        <input type="text" id="jabatan" value="WALI KOTA BONTANG">
+      </div>
+      <div>
+        <label>Provinsi</label>
+        <input type="text" id="provinsi" value="PROVINSI KALIMANTAN TIMUR">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label>Nomor</label>
+        <input type="text" id="nomor" placeholder="mis. 161">
+      </div>
+      <div>
+        <label>Tahun</label>
+        <input type="text" id="tahun" value="2025">
+      </div>
+    </div>
+    <label>Judul keputusan (tanpa kata "TENTANG")</label>
+    <textarea id="judul" placeholder="mis. Pembentukan Tim Pengendali Gerakan Orang Tua Asuh Cegah *Stunting* di Kota Bontang">Pembentukan Tim Pengendali Gerakan Orang Tua Asuh Cegah *Stunting* di Kota Bontang</textarea>
+    <div class="hint">Ketik *kata* untuk mencetak miring (italic), sesuai istilah asing seperti *stunting*.</div>
+
+    <h2 style="margin-top:20px;">2. Menimbang</h2>
+    <div id="menimbang-list"></div>
+    <button class="btn add-row" onclick="addMenimbang()">+ Tambah poin Menimbang</button>
+
+    <h2 style="margin-top:20px;">3. Mengingat</h2>
+    <div id="mengingat-list"></div>
+    <button class="btn add-row" onclick="addMengingat()">+ Tambah poin Mengingat</button>
+
+    <h2 style="margin-top:20px;">4. Memperhatikan</h2>
+    <div class="checkbox-row">
+      <input type="checkbox" id="use-memperhatikan" checked onchange="renderPreview()">
+      <label style="margin:0;">Sertakan bagian Memperhatikan</label>
+    </div>
+    <div id="memperhatikan-list"></div>
+    <button class="btn add-row" onclick="addMemperhatikan()">+ Tambah poin Memperhatikan</button>
+
+    <h2 style="margin-top:20px;">5. Diktum (Menetapkan)</h2>
+    <div class="hint">Baris yang diawali "- " otomatis jadi sub-poin berhuruf (a, b, c ...) di dalam satu diktum, seperti pada Diktum KEDUA di contoh asli.</div>
+    <div id="diktum-list"></div>
+    <button class="btn add-row" onclick="addDiktum()">+ Tambah diktum</button>
+
+    <h2 style="margin-top:20px;">6. Penetapan &amp; Tanda Tangan</h2>
+    <div class="row2">
+      <div>
+        <label>Ditetapkan di</label>
+        <input type="text" id="tempat" value="Bontang">
+      </div>
+      <div>
+        <label>Pada tanggal</label>
+        <input type="date" id="tanggal">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label>Jabatan penanda tangan</label>
+        <input type="text" id="jabatan-ttd" value="WALI KOTA BONTANG,">
+      </div>
+      <div>
+        <label>Nama pejabat</label>
+        <input type="text" id="nama-ttd" placeholder="Nama lengkap">
+      </div>
+    </div>
+
+    <h2 style="margin-top:20px;">7. Tembusan</h2>
+    <div id="tembusan-list"></div>
+    <button class="btn add-row" onclick="addTembusan()">+ Tambah tembusan</button>
+
+    <h2 style="margin-top:20px;">8. Simpan / Muat draf</h2>
+    <div class="download-bar">
+      <button class="btn" onclick="saveDraft()">Simpan draf (browser ini)</button>
+      <button class="btn" onclick="loadDraft()">Muat draf</button>
+      <button class="btn danger" onclick="clearAll()">Kosongkan</button>
+    </div>
+    <div class="hint">Draf disimpan lokal di browser Anda (localStorage), tidak diunggah kemana pun.</div>
+  </div>
+
+  <!-- PREVIEW + DOWNLOAD -->
+  <div class="panel sticky-actions">
+    <h2>Pratinjau</h2>
+    <div class="preview-scroll">
+      <div class="doc" id="preview"></div>
+    </div>
+    <div class="download-bar">
+      <button class="btn primary" onclick="downloadDocx()">⬇ Unduh sebagai .docx</button>
+    </div>
+    <div id="status"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const ORDINALS = ["Kesatu","Kedua","Ketiga","Keempat","Kelima","Keenam","Ketujuh",
+  "Kedelapan","Kesembilan","Kesepuluh","Kesebelas","Kedua Belas","Ketiga Belas",
+  "Keempat Belas","Kelima Belas","Keenam Belas","Ketujuh Belas","Kedelapan Belas",
+  "Kesembilan Belas","Kedua Puluh"];
+function letterAt(i){ return String.fromCharCode(97+i); } // a,b,c...
+function ordinal(i){ return ORDINALS[i] || ("Ke-"+(i+1)); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+// turn *text* into <i>text</i> for HTML preview
+function mdItalicHtml(s){
+  return esc(s).replace(/\*(.+?)\*/g, "<i>$1</i>");
+}
+// split "*text*" into plain/italic runs for docx generation
+function splitItalicRuns(text){
+  const parts = [];
+  const re = /\*(.+?)\*/g;
+  let last = 0, m;
+  while((m = re.exec(text)) !== null){
+    if(m.index > last) parts.push({text: text.slice(last, m.index), italics:false});
+    parts.push({text: m[1], italics:true});
+    last = re.lastIndex;
+  }
+  if(last < text.length) parts.push({text: text.slice(last), italics:false});
+  if(parts.length===0) parts.push({text:"", italics:false});
+  return parts;
+}
+
+/* ---------- generic repeatable list manager ---------- */
+function makeListManager(containerId, placeholder){
+  const container = document.getElementById(containerId);
+  function add(value=""){
+    const block = document.createElement("div");
+    block.className = "item-block";
+    block.innerHTML = `
+      <div class="item-label"></div>
+      <textarea oninput="renderPreview()" placeholder="${placeholder}">${esc(value)}</textarea>
+      <button class="btn small danger" style="margin-top:4px;" onclick="this.parentElement.remove(); renderPreview();">Hapus</button>
+    `;
+    container.appendChild(block);
+    renderPreview();
+  }
+  return {add, container};
+}
+const menimbangMgr = makeListManager("menimbang-list", "bahwa ...");
+const mengingatMgr = makeListManager("mengingat-list", "Undang-Undang Nomor ... Tahun ... tentang ...");
+const memperhatikanMgr = makeListManager("memperhatikan-list", "Keputusan/Surat ... tentang ...");
+const diktumMgr = makeListManager("diktum-list", "Teks diktum. Baris '- ' jadi sub-poin a,b,c...");
+const tembusanMgr = makeListManager("tembusan-list", "Nama jabatan penerima tembusan");
+
+function addMenimbang(v){ menimbangMgr.add(v); }
+function addMengingat(v){ mengingatMgr.add(v); }
+function addMemperhatikan(v){ memperhatikanMgr.add(v); }
+function addDiktum(v){ diktumMgr.add(v); }
+function addTembusan(v){ tembusanMgr.add(v); }
+
+function getListValues(containerId){
+  return [...document.querySelectorAll("#"+containerId+" textarea, #"+containerId+" input")]
+    .map(el=>el.value);
+}
+
+/* ---------- collect all form data ---------- */
+function collect(){
+  return {
+    jabatan: document.getElementById("jabatan").value.trim(),
+    provinsi: document.getElementById("provinsi").value.trim(),
+    nomor: document.getElementById("nomor").value.trim(),
+    tahun: document.getElementById("tahun").value.trim(),
+    judul: document.getElementById("judul").value.trim(),
+    menimbang: getListValues("menimbang-list"),
+    mengingat: getListValues("mengingat-list"),
+    useMemperhatikan: document.getElementById("use-memperhatikan").checked,
+    memperhatikan: getListValues("memperhatikan-list"),
+    diktum: getListValues("diktum-list"),
+    tempat: document.getElementById("tempat").value.trim(),
+    tanggal: document.getElementById("tanggal").value,
+    jabatanTtd: document.getElementById("jabatan-ttd").value.trim(),
+    namaTtd: document.getElementById("nama-ttd").value.trim(),
+    tembusan: getListValues("tembusan-list"),
+  };
+}
+
+function formatTanggalPanjang(isoDate){
+  if(!isoDate) return "..............................";
+  const bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus",
+    "September","Oktober","November","Desember"];
+  const [y,m,d] = isoDate.split("-").map(Number);
+  return `${d} ${bulan[m-1]} ${y}`;
+}
+
+/* parse a diktum's raw text into {main:[lines], sub:[lines]} using "- " prefix */
+function parseDiktum(raw){
+  const lines = raw.split("\n");
+  const main = [], sub = [];
+  for(const line of lines){
+    const t = line.trim();
+    if(t === "") continue;
+    if(t.startsWith("- ")) sub.push(t.slice(2).trim());
+    else main.push(t);
+  }
+  return {main, sub};
+}
+
+/* ---------- live HTML preview ---------- */
+function renderPreview(){
+  const d = collect();
+  let html = "";
+  html += `<div class="center bold">${esc(d.jabatan) || "WALI KOTA ..."}</div>`;
+  html += `<div class="center bold">${esc(d.provinsi)}</div>`;
+  html += `<div style="height:14px"></div>`;
+  html += `<div class="center bold">KEPUTUSAN ${esc(d.jabatan)}</div>`;
+  html += `<div class="center bold">NOMOR ${esc(d.nomor) || "..."} TAHUN ${esc(d.tahun) || "...."}</div>`;
+  html += `<div style="height:8px"></div>`;
+  html += `<div class="center bold">TENTANG</div>`;
+  html += `<div class="center bold">${mdItalicHtml(d.judul.toUpperCase())}</div>`;
+  html += `<div style="height:14px"></div>`;
+  html += `<div class="bold">${esc(d.jabatan)},</div>`;
+
+  // Menimbang
+  html += `<table><tbody>`;
+  d.menimbang.forEach((val, i)=>{
+    html += `<tr>
+      <td class="label-col">${i===0?"<b>Menimbang</b>":""}</td>
+      <td class="colon-col">${i===0?":":""}</td>
+      <td class="num-col">${letterAt(i)}.</td>
+      <td>${mdItalicHtml(val)}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // Mengingat
+  html += `<table><tbody>`;
+  d.mengingat.forEach((val, i)=>{
+    html += `<tr>
+      <td class="label-col">${i===0?"<b>Mengingat</b>":""}</td>
+      <td class="colon-col">${i===0?":":""}</td>
+      <td class="num-col">${i+1}.</td>
+      <td>${mdItalicHtml(val)}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // Memperhatikan
+  if(d.useMemperhatikan && d.memperhatikan.length){
+    html += `<table><tbody>`;
+    d.memperhatikan.forEach((val, i)=>{
+      html += `<tr>
+        <td class="label-col">${i===0?"<b>Memperhatikan</b>":""}</td>
+        <td class="colon-col">${i===0?":":""}</td>
+        <td class="num-col">${i+1}.</td>
+        <td>${mdItalicHtml(val)}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  html += `<div class="center bold" style="margin-top:14px;">MEMUTUSKAN :</div>`;
+
+  // Diktum
+  html += `<table><tbody>`;
+  d.diktum.forEach((raw, i)=>{
+    const {main, sub} = parseDiktum(raw);
+    let cell = main.map(mdItalicHtml).join("<br>");
+    if(sub.length){
+      cell += `<table><tbody>`;
+      sub.forEach((s,j)=>{
+        cell += `<tr><td class="num-col">${letterAt(j)}.</td><td>${mdItalicHtml(s)}</td></tr>`;
+      });
+      cell += `</tbody></table>`;
+    }
+    html += `<tr>
+      <td class="label-col">${i===0?"<b>Menetapkan</b>":""}</td>
+      <td class="colon-col">${i===0?":":""}</td>
+      <td class="num-col" style="white-space:nowrap;">${esc(ordinal(i))}</td>
+      <td>: ${cell}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // Signature block
+  html += `<div class="sig">
+    <div>Ditetapkan di ${esc(d.tempat) || "......."}</div>
+    <div>pada tanggal ${formatTanggalPanjang(d.tanggal)}</div>
+    <div style="height:6px"></div>
+    <div class="bold">${esc(d.jabatanTtd)}</div>
+    <div style="height:60px"></div>
+    <div class="bold" style="text-decoration:underline;">${esc(d.namaTtd) || "......................."}</div>
+  </div>`;
+
+  // Tembusan
+  if(d.tembusan.length){
+    html += `<div style="margin-top:20px;font-size:12px;">
+      <div>Tembusan disampaikan kepada Yth:</div>
+      <table><tbody>`;
+    d.tembusan.forEach((val,i)=>{
+      html += `<tr><td class="num-col">${i+1}.</td><td>${esc(val)}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  document.getElementById("preview").innerHTML = html;
+}
+
+/* ---------- docx generation ---------- */
+function textRunsFromMarkdown(text, opts={}){
+  return splitItalicRuns(text).map(p => new docx.TextRun({text:p.text, italics:p.italics, ...opts}));
+}
+function para(text, opts={}){
+  return new docx.Paragraph({children: textRunsFromMarkdown(text, opts.runOpts||{}), alignment: opts.alignment, spacing:{after:0}});
+}
+function noBorders(){
+  const none = {style: docx.BorderStyle.NONE, size:0, color:"FFFFFF"};
+  return {top:none,bottom:none,left:none,right:none,insideHorizontal:none,insideVertical:none};
+}
+function cell(children, widthPct){
+  return new docx.TableCell({
+    children: Array.isArray(children)?children:[children],
+    width:{size:widthPct, type: docx.WidthType.PERCENTAGE},
+    borders: noBorders(),
+    margins:{top:20,bottom:20,left:40,right:40},
+  });
+}
+function labelTable(rows, labelWord){
+  // rows: array of {marker, text}
+  const tableRows = rows.map((r, i)=> new docx.TableRow({children:[
+    cell(para(i===0?labelWord:""), 14),
+    cell(para(i===0?":":""), 3),
+    cell(para(r.marker), 5),
+    cell(para(r.text), 78),
+  ]}));
+  return new docx.Table({rows: tableRows, width:{size:100, type: docx.WidthType.PERCENTAGE}, borders: noBorders()});
+}
+
+async function buildDocx(){
+  const d = collect();
+  const children = [];
+
+  children.push(para(d.jabatan || "WALI KOTA ...", {alignment: docx.AlignmentType.CENTER, runOpts:{bold:true}}));
+  children.push(para(d.provinsi, {alignment: docx.AlignmentType.CENTER, runOpts:{bold:true}}));
+  children.push(new docx.Paragraph({text:""}));
+  children.push(para(`KEPUTUSAN ${d.jabatan}`, {alignment: docx.AlignmentType.CENTER, runOpts:{bold:true}}));
+  children.push(para(`NOMOR ${d.nomor||"..."} TAHUN ${d.tahun||"...."}`, {alignment: docx.AlignmentType.CENTER, runOpts:{bold:true}}));
+  children.push(new docx.Paragraph({text:""}));
+  children.push(para("TENTANG", {alignment: docx.AlignmentType.CENTER, runOpts:{bold:true}}));
+  children.push(para(d.judul.toUpperCase(), {alignment: docx.AlignmentType.CENTER, runOpts:{bold:true}}));
+  children.push(new docx.Paragraph({text:""}));
+  children.push(para(`${d.jabatan},`, {runOpts:{bold:true}}));
+  children.push(new docx.Paragraph({text:""}));
+
+  children.push(labelTable(d.menimbang.map((t,i)=>({marker:letterAt(i)+".", text:t})), "Menimbang"));
+  children.push(new docx.Paragraph({text:""}));
+  children.push(labelTable(d.mengingat.map((t,i)=>({marker:(i+1)+".", text:t})), "Mengingat"));
+
+  if(d.useMemperhatikan && d.memperhatikan.length){
+    children.push(new docx.Paragraph({text:""}));
+    children.push(labelTable(d.memperhatikan.map((t,i)=>({marker:(i+1)+".", text:t})), "Memperhatikan"));
+  }
+
+  children.push(new docx.Paragraph({text:""}));
+  children.push(para("MEMUTUSKAN :", {alignment: docx.AlignmentType.CENTER, runOpts:{bold:true}}));
+  children.push(new docx.Paragraph({text:""}));
+
+  // Diktum table with nested sub-points
+  const diktumRows = d.diktum.map((raw, i)=>{
+    const {main, sub} = parseDiktum(raw);
+    const mainParas = main.map(t=>para(t));
+    let subContent = [];
+    if(sub.length){
+      subContent.push(new docx.Table({
+        rows: sub.map((s,j)=> new docx.TableRow({children:[
+          cell(para(letterAt(j)+"."), 6),
+          cell(para(s), 94),
+        ]})),
+        width:{size:100, type: docx.WidthType.PERCENTAGE},
+        borders: noBorders(),
+      }));
+    }
+    return new docx.TableRow({children:[
+      cell(para(i===0?"Menetapkan":""), 14),
+      cell(para(i===0?":":""), 3),
+      cell(para(ordinal(i)), 12),
+      cell([...mainParas, ...subContent], 71),
+    ]});
+  });
+  children.push(new docx.Table({rows: diktumRows, width:{size:100, type: docx.WidthType.PERCENTAGE}, borders: noBorders()}));
+
+  // Signature
+  children.push(new docx.Paragraph({text:""}));
+  children.push(new docx.Paragraph({text:""}));
+  const sigIndent = {left: 5000};
+  children.push(para(`Ditetapkan di ${d.tempat||"......."}`, {alignment: docx.AlignmentType.RIGHT}));
+  children.push(para(`pada tanggal ${formatTanggalPanjang(d.tanggal)}`, {alignment: docx.AlignmentType.RIGHT}));
+  children.push(new docx.Paragraph({text:""}));
+  children.push(para(d.jabatanTtd, {alignment: docx.AlignmentType.RIGHT, runOpts:{bold:true}}));
+  for(let i=0;i<4;i++) children.push(new docx.Paragraph({text:"", alignment: docx.AlignmentType.RIGHT}));
+  children.push(para(d.namaTtd || ".......................", {alignment: docx.AlignmentType.RIGHT, runOpts:{bold:true, underline:{}}}));
+
+  // Tembusan
+  if(d.tembusan.length){
+    children.push(new docx.Paragraph({text:""}));
+    children.push(para("Tembusan disampaikan kepada Yth:", {runOpts:{size:20}}));
+    children.push(new docx.Table({
+      rows: d.tembusan.map((t,i)=> new docx.TableRow({children:[
+        cell(para((i+1)+".", {runOpts:{size:20}}), 6),
+        cell(para(t, {runOpts:{size:20}}), 94),
+      ]})),
+      width:{size:60, type: docx.WidthType.PERCENTAGE},
+      borders: noBorders(),
+    }));
+  }
+
+  const doc = new docx.Document({
+    sections: [{
+      properties:{},
+      children,
+    }],
+    styles:{
+      default:{
+        document:{ run:{ font:"Times New Roman", size:24 } } // 12pt
+      }
+    }
+  });
+
+  return await docx.Packer.toBlob(doc);
+}
+
+async function downloadDocx(){
+  const status = document.getElementById("status");
+  status.textContent = "Membuat file .docx ...";
+  try{
+    const blob = await buildDocx();
+    const d = collect();
+    const fname = `Keputusan_${d.jabatan.replace(/\s+/g,"_")}_${d.nomor||"draft"}_${d.tahun||""}.docx`;
+    saveAs(blob, fname);
+    status.textContent = "Berhasil diunduh: " + fname;
+  }catch(err){
+    console.error(err);
+    status.textContent = "Gagal membuat dokumen: " + err.message;
+  }
+}
+
+/* ---------- draft save/load ---------- */
+function saveDraft(){
+  const d = collect();
+  try{
+    localStorage.setItem("keputusan-draft", JSON.stringify(d));
+    document.getElementById("status").textContent = "Draf disimpan di browser ini.";
+  }catch(e){
+    document.getElementById("status").textContent = "Gagal menyimpan draf: " + e.message;
+  }
+}
+function loadDraft(){
+  const raw = localStorage.getItem("keputusan-draft");
+  if(!raw){ document.getElementById("status").textContent = "Tidak ada draf tersimpan."; return; }
+  const d = JSON.parse(raw);
+  document.getElementById("jabatan").value = d.jabatan||"";
+  document.getElementById("provinsi").value = d.provinsi||"";
+  document.getElementById("nomor").value = d.nomor||"";
+  document.getElementById("tahun").value = d.tahun||"";
+  document.getElementById("judul").value = d.judul||"";
+  document.getElementById("tempat").value = d.tempat||"";
+  document.getElementById("tanggal").value = d.tanggal||"";
+  document.getElementById("jabatan-ttd").value = d.jabatanTtd||"";
+  document.getElementById("nama-ttd").value = d.namaTtd||"";
+  document.getElementById("use-memperhatikan").checked = !!d.useMemperhatikan;
+
+  menimbangMgr.container.innerHTML="";
+  mengingatMgr.container.innerHTML="";
+  memperhatikanMgr.container.innerHTML="";
+  diktumMgr.container.innerHTML="";
+  tembusanMgr.container.innerHTML="";
+  (d.menimbang||[]).forEach(v=>addMenimbang(v));
+  (d.mengingat||[]).forEach(v=>addMengingat(v));
+  (d.memperhatikan||[]).forEach(v=>addMemperhatikan(v));
+  (d.diktum||[]).forEach(v=>addDiktum(v));
+  (d.tembusan||[]).forEach(v=>addTembusan(v));
+  renderPreview();
+  document.getElementById("status").textContent = "Draf dimuat.";
+}
+function clearAll(){
+  if(!confirm("Kosongkan semua isian?")) return;
+  ["menimbang-list","mengingat-list","memperhatikan-list","diktum-list","tembusan-list"]
+    .forEach(id=>document.getElementById(id).innerHTML="");
+  document.getElementById("judul").value="";
+  document.getElementById("nomor").value="";
+  document.getElementById("nama-ttd").value="";
+  renderPreview();
+}
+
+/* ---------- seed with example from the uploaded template ---------- */
+function seedExample(){
+  addMenimbang("bahwa untuk mendukung implementasi misi asta cita Presiden dan Wakil Presiden Republik Indonesia khususnya dalam pemberantasan kemiskinan dan penguatan kualitas sumber daya manusia yang unggul untuk menyongsong Indonesia Emas 2045, diperlukan penyiapan generasi yang sehat, cerdas, dan bebas *stunting*;");
+  addMenimbang("bahwa dalam rangka meningkatkan kepedulian dan peran serta masyarakat dalam pencegahan dan penurunan *stunting*, perlu keterlibatan peran pemerintah daerah serta pemangku kepentingan secara holistik integratif dan berkualitas melalui koordinasi, sinergi, dan sinkronisasi dalam program gerakan orang tua asuh cegah *stunting*;");
+  addMenimbang("bahwa berdasarkan pertimbangan sebagaimana dimaksud dalam huruf a dan huruf b, perlu menetapkan Keputusan Wali Kota tentang Pembentukan Tim Pengendali Gerakan Orang Tua Asuh Cegah *Stunting* di Kota Bontang;");
+
+  addMengingat("Undang-Undang Nomor 47 Tahun 1999 tentang Pembentukan Kabupaten Nunukan, Kabupaten Malinau, Kabupaten Kutai Barat, Kabupaten Kutai Timur dan Kota Bontang, sebagaimana telah beberapa kali diubah terakhir dengan Undang-Undang Nomor 21 Tahun 2023;");
+  addMengingat("Undang-Undang Nomor 52 Tahun 2009 tentang Perkembangan Kependudukan dan Pembangunan Keluarga;");
+  addMengingat("Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah, sebagaimana telah beberapa kali diubah terakhir dengan Undang-Undang Nomor 6 Tahun 2023;");
+  addMengingat("Undang-Undang Nomor 17 Tahun 2023 tentang Kesehatan;");
+  addMengingat("Peraturan Presiden Nomor 72 Tahun 2021 tentang Percepatan Penurunan *Stunting*;");
+
+  addMemperhatikan("Keputusan Menteri Kependudukan dan Pembangunan Keluarga/Kepala Badan Kependudukan dan Keluarga Berencana Nasional Nomor 329/KEP/G2/2024 tentang Panduan Pelaksanaan Gerakan Orang Tua Asuh Cegah *Stunting*;");
+  addMemperhatikan("Keputusan Menteri Kependudukan dan Pembangunan Keluarga/Kepala Badan Kependudukan dan Keluarga Berencana Nasional Nomor 59/KEP/G4/2025 tentang Tim Pengendali Gerakan Orang Tua Asuh Cegah *Stunting*;");
+
+  addDiktum("Membentuk Tim Pengendali Gerakan Orang Tua Asuh Cegah *Stunting* (Genting) dengan susunan personalia sebagaimana tercantum dalam Lampiran I Keputusan Wali Kota ini;");
+  addDiktum("Tim sebagaimana dimaksud diktum KESATU bertujuan untuk:\n- menyusun kebijakan teknis Genting;\n- menyusun tata kelola pelaksanaan Genting;\n- melakukan koordinasi teknis dengan kementerian/lembaga terkait;\n- melakukan promosi dan kerja sama dengan mitra pentahelix tingkat kota;\n- melakukan pemetaan sasaran dan potensi mitra pentahelix;\n- melakukan pemantauan dan evaluasi pelaksanaan Genting; dan\n- mengembangkan sistem informasi, pelaporan, dan pemantauan pelaksanaan Genting;");
+  addDiktum("Uraian tugas Tim Pengendali Genting di Kota Bontang sebagaimana tercantum dalam Lampiran II Keputusan Wali Kota ini;");
+  addDiktum("Segala beban biaya yang timbul akibat ditetapkan Keputusan ini dibebankan pada Anggaran Pendapatan dan Belanja Daerah Kota Bontang;");
+  addDiktum("Keputusan ini mulai berlaku sejak tanggal ditetapkan dengan ketentuan apabila terdapat kekeliruan dalam penetapannya akan diperbaiki sebagaimana mestinya.");
+
+  addTembusan("Inspektur Daerah");
+  addTembusan("Kepala Badan Pengelolaan Keuangan dan Aset Daerah");
+  addTembusan("Kepala Dinas Pemberdayaan Perempuan, Perlindungan Anak dan Keluarga Berencana");
+  addTembusan("Yang Bersangkutan");
+
+  document.getElementById("nomor").value = "161";
+}
+
+seedExample();
+renderPreview();
+</script>
+</body>
+</html>
